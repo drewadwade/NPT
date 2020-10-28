@@ -1,0 +1,21 @@
+Remove all backdoors and/or rootkits installed
+
+Remove all executables, scripts, and temporary files
+	If possible, use secure delete methods
+
+Remove any user accounts created for connecting back to compromise systems
+	Windows local users
+		net user <username> /del
+
+Remove any added routes
+	Windows
+		route delete <destination network>
+
+Remove any added services
+	Windows
+		sc delete <service name>
+
+
+
+Return system settings and application configurations to original values if they were modified during assessment
+

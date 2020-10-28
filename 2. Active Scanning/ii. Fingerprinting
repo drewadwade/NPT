@@ -1,0 +1,43 @@
+i. Fingerprinting
+
+nmap 
+	Services - efficient
+	TCP
+		ports=$(nmap -p- --min-rate=1000 -T4 10.10.10.27 | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
+
+		nmap -A -p$ports 10.10.10.27 
+
+		in fish 
+			set ports (nmap -p- --min-rate=1000 -T4 10.10.0.11 | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$_//)
+
+			nmap -A -p$ports 10.10.10.27 
+
+	UDP
+		ports=$(nmap -sU -p- --min-rate=1000 -T4 10.10.10.27 | grep ^[0-9] | cut -d '/' -f 1 | tr '\n' ',' | sed s/,$//)
+
+		nmap -A -p$ports 10.10.10.27 
+
+		Unreliable and slow - Nessus can be better option
+
+	Scripts
+		search in /usr/share/nmap/scripts
+
+		nmap -p 443 --script=ssl-enum-ciphers domain.com
+
+	 
+Metasploit
+	port scan
+		auxiliary/scanner/portscan/syn
+		ports 1-65535
+		RHOSTS <target>
+
+	SMB version info
+		scanner/smb/smb_version
+
+
+SSH banner
+	ssh <IP>
+
+	older systems may be unable to negotiate normally
+		ssh <IP> -oKexAlgorithms=+<algorithm offered by target> -c <cipher offered by target>
+

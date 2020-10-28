@@ -1,0 +1,10 @@
+FTP
+
+if issues with file transfer, switch from ASCII to binary 
+
+Start TFTPD Server
+	atftpd --daemon --port 69 /tmp
+
+Connect to TFTP Server
+	tftp 192.168.0.10
+	tftp> put / get files

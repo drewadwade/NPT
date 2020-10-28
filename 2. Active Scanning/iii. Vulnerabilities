@@ -1,0 +1,31 @@
+iii. Vulnerabilities
+
+Nessus
+	Tenable.com -free for 16 hosts or fewer
+	/etc/init.d/nessusd start
+	https://kali:8834
+
+
+Common Vulnerabilities and Exposures
+	https://cve.mitre.org
+
+
+Common Weakness Enumeration
+	https://cwe.mitre.org
+
+
+JPCert
+	https://www.jpcert.or.jp/english/
+
+
+nmap
+	nmap --script nmap-vulners,vulscan --script-args vulscandb=scipvuldb.csv -sV <IP>
+	
+	https://github.com/vulnersCom/nmap-vulners
+	https://github.com/scipag/vulscan
+
+
+Exploits
+	searchsploit <service & version>
+
+	exploit-db.com

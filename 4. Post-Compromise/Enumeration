@@ -1,0 +1,148 @@
+Windows
+
+	whoami /all
+
+	qwinsta 		
+		see who is currently logged in
+
+	net user /domain
+		see all user accounts for the domain
+
+		net user <username> /domain
+			see all groups a user is member of
+
+	net group /domain
+		see all groups for the domain
+
+		net group "Domain Admins" /domain
+			see all Domain Admins for domain
+
+		net group "Enterprise Admins" /domain
+			see all Enterprise Admins for domain
+
+
+	netdiscover -i <interface>
+		see all machines on the network
+
+	gpresult /z
+
+	tasklist /v
+
+	arp -a
+
+	netstat -ano
+
+	net use
+
+	wmic logicaldisk get name
+
+	ipconfig /all
+
+	start /b dir /b /s /a ^> bob.txt
+
+	ipconfig /displaydns
+
+
+SMB Session Enumeration against DC
+	who else has sessions with SMB share and their IP
+
+	JoeWare's NetSess
+		NetSess.exe <DC_hostname>
+
+
+Show wifi password in plaintext 
+
+	netsh wlan show profile name=<SSID> key=clear
+		req's admin rights
+
+	Win+R—> ncpa.cpl —> DoubleClick_Wifi Name —> Under General —> Wireless Properties —>Security —>Show Characters
+
+Logs
+	Linux
+		/var/log
+			auth.log
+				interactive and non-interactive log
+		login history
+			wtmp
+				user logins and system reboots
+				last
+			btmp 
+				failed logins - can contain user passwords if accidentally entered as username
+				lastb
+			lastlog
+				last login for each user
+				lastlog
+
+		turn on kernel-level activity monitor (auditd)
+			key-logging
+			ausearch -if /var/log/audit -c <command_eg_useradd>
+			aureport
+			aulast
+			aulastlog
+
+
+PowerView
+	put PowerView.ps1 on target machine
+		https://github.com/PowerShellMafia/PowerSploit
+			PowerView.ps1 is in Recon folder
+	powershell -ep bypass
+	. .\powerview.ps1
+
+	basic network info
+		get-netdomain
+	domain controller(s) info
+		get-netdomaincontroller
+	domain policies
+		get-domainpolicy
+	domain password policies
+		(get-domainpolicy)."system access"
+	domain users
+		get-netuser 					detailed
+		get-netuser | select cn 		just common names
+	user properties
+		get-userproperty							property list
+		get-userproperty -Properties <property>  	property values
+	check for honey account (no logons)
+		get-userproperty -Properties logoncount
+	domain computers
+		get-netcomputer -fulldata		detailed
+		get-netcomputer					just computer names
+	domain groups
+		get-netgroup
+	domain group members
+		get-netgroupmember -groupname <group>
+	find network shares
+		invoke-sharefinder
+	group policies
+		get-netgpo
+
+	PowerView Cheat Sheet
+		https://gist.github.com/HarmJ0y/184f9822b195c52dd50c379ed3117993
+
+
+BloodHound
+	Run neo4j
+		neo4j console
+	Open browser to URL provided by neo4j
+	Login to neo4j		
+		neo4j:password
+	New shell running bloodhound
+		bloodhound
+		Login to bloodhound
+	Put SharpHound.ps1 on target machine
+		https://github.com/BlooHoundAD/BloodHound/blob/master/Ingestors/SharpHound.ps1
+	Run ingestor on target machine
+		powershell -ep bypass
+		. .\sharphound.ps1
+		invoke-bloodhound -collectionmethod all -domain <domain> -zipfilename <output file name>.zip
+	Copy file to machine running bloodhound
+	Select Upload data and select zip file
+	Click hamburger menu to view results
+	Select Queries for prebuilt queries or build own
+
+
+
+
+
+
+

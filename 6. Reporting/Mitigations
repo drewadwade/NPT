@@ -1,0 +1,127 @@
+LLMNR Poisoning
+	Disable LLMNR
+		In Group Policy Editor, select "Turn OFF Multicast Name Resolution" under Local Computer Policy > Computer Configuration > Administrative Templates > Network > DNS Client 
+	Disable NBT-NS 
+		Select "Disable NetBIOS over TCP/IP" in Network Connections > Network Adapter Properties > TCP/IPv4 Properties > Advanced tab > WINS tab
+	If cannot disable LLMNR/NBT-NS
+		Require Network Access Control
+		Require strong user passwords
+
+
+SMB Relay
+	Enable SMB Signing on all devices
+		NOTE: can cause performance issues with file copies
+	Disable NTLM authentication on network
+		NOTE: If Kerberos fails, Windows will default to NTLM
+	Account Tiering
+	Local Admin Restriction
+
+
+IPv6 Poisoning
+	NOTE: disabling IPv6 may have unwanted side effects
+
+	If not using IPv6 internally
+		Change Windows Firewall settings via Group Policy from ALLOW to BLOCK:
+			(Inbound) Core Networking - Dynamic Host Configuration Protocol for IPv6(DHCPv6-In)
+			(Inbound) Core Networking - Router Advertisement (ICMPv6-In)
+			(Outbound) Core Networking - Dynamic Host Configuration Protocol for IPv6(DHCPv6-Out)
+	If not using WPAD internally
+		Disable WinHttpAutoProxySvc service via Group Policy
+
+	Enable LDAP signing and LDAP channel binding
+
+	Consider moving Administrative users to the Protected Users group or marking them as "Account is sensitive and cannot be delegated" - prevents impersonation via delegation
+
+	Implement Secure IPv6 Policies
+
+		Require defend/protect/filter ICMPv6 and Multicast
+			filter out ICMPv6 message types 5-127,138-255 
+			filter ICMPv6 message types 133,134
+				only from trusted routers
+		Require security controls on FF03 (realm), FF04 (admin), FF05 (site), FF06 (organisation) link local multicast addresses
+
+		Address filtering
+			implement anti-spoofing perimeter ACl
+				no packet with source address of your network to enter
+				no packet with destination address of your netwwork to leave
+		Perimteter Filtering
+			Transit Traffic
+				Start with DENY ALL
+				Allow:
+					ICMPv6 1: Destination unreachable
+						filter selectively - eg. allow 4 port unreachable
+					ICMPv6 2: Packet too large
+					ICMPv6 3: Code 0 only (TTL hop expired)
+					ICMPv6 4: Code 0/1 only (bad headers)
+					128/129 optional - echo request/reply
+					allow 144-147 only if network is "mobility enabled"
+					151-153 optional - only if participating in global multicast
+				DROP 137 (redirect) - drop at perimeter
+			Non-Transit
+				Start with DENY ALL
+				Follow Transit policy
+				Allow 133-136, 141-142
+		Multicast Filtering
+			distinguish perimeter traffic from internal
+			ND and RD has to function internally - should not transit perimeter
+			end hosts should not be permitted to advertise as routers
+			end hosts should not be gratuitously responding to NS
+			most should not participate in global/inter-domain multicast
+				any packet with multicast source drop at perim
+				reserved and unused multicast destination drop at perim
+				most others drop at perim
+		Protocol Normalisation
+			enforce extension header rules
+				each header should no appear more than once 
+					except destination options header
+				0 (hop-by-hop options) should be first
+				60 (dest options) should be at end (twice at most)
+				44 (fragment) should not appear more than once
+			filter specific types and subtypes within header
+				might be subject of DoS attack - work the filtering too hard
+			drop any with headers with padding not at 0's
+				hop-by-hop and destination options can include padding to 8-octet boundaries - covert data exfil
+			route options header (43) 
+				similar to IPv4 strict-source/loose-source routing
+					danger: Send me all the things!
+				must not contain source route type (0)
+					deprecated - can cause packet oscillation - DoS
+			drop reserved, undefined, etc
+		Address Privacy
+			EUI-64 
+				MAC address in host portion 
+				company devices likely all/most from same manufacturer - 
+				leaves only 24-bit search space for link-local scope
+				recommend disable EUI-64
+					link local and SLAAC addresses will be random
+			ping6 -i eth1 ff02::1   
+				link local multicast reveals all hosts in local scope
+			Endpoint route table
+				don't allow endpoints to advertise routes
+				block Router Advertisement from endpoints
+			NAT66 - don't use unless you need addressing independence
+				see https://tools.ietf.org/html/rfc6296
+		don't trunk VLANs everywhere - multicast switch CAM table DoS
+
+
+Pass Attacks (Pass the Password/Hash)
+	Limit or eliminate account re-use
+		avoid re-using local admin password
+		disable Guest and Administrator accounts
+		limit who is a local administrator (least privilege)
+	Use strong passwords
+	Privilege Access Management
+		check out/in sensitive accounts only when needed
+		automatically rotate passwords on check out/in
+
+
+Token Impersonation
+	Limit user/group token creation permissions
+	Account tiering
+	Local admin restriction
+
+
+Kerberoasting
+	Strong passwords
+	Least privilege
+

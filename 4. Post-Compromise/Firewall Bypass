@@ -1,0 +1,5 @@
+Disable Windows Firewall on newer versions
+	netsh advfirewall set allprofiles state off
+
+Disable Windows Firewall on older windows:
+	netsh firewall set opmode disable

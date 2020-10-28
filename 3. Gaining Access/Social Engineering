@@ -1,0 +1,92 @@
+Social Engineering Pretexts
+	pretext-project.github.io
+
+Malware Documents
+	XLM (Excel 4.0) macros
+		=EXEC("calc.exe")
+
+		Tools
+			Excel4-DCOM
+			Process injection with SYLK
+			SharpShooter SLK macro
+			CyberReason - 64-bit architectures
+			Macrome - from bin payload to Excel spreadsheet with macro
+		
+			EXCELntDonut ***
+				INPUT -> C# DLL to spawn a new process (e.g. injects Cobalt Strike beacon)
+				OUTPUT -> XLS doc
+				sandbox, I/O, OS detection
+
+
+		poor detection 
+			AMSI has no visibility on XLM
+			not much AV detection
+			can be in .xls (not .xslm files)
+
+
+		process injection	
+			=REGISTER("Kernel32","VirtualAlloc","JJJJJ","Valloc",,1,9)
+					   DLL 	      Function	     Data Type	Alias	Settings
+		
+		non-printable characters in shellcode
+			=CHAR()
+		
+
+		hide macro sheet
+			"Very Hidden"
+				hex edit value to 02
+				some AV will detect this
+					work arounds by Michael Webber
+
+	Hot Manchego 
+		based on Epic Manchego
+			EPPlus - generate macro-enabled Open Office XML workbooks
+			no metadata created
+			vbaProject.bin file does not contain compiled VBA code like MS Office
+
+		generates XLSM file from shell code
+
+	Hover_with_Power
+		PPT hover over feature - mouseover and mouseclick actions 
+		requires users to click through 2 security warnings
+			need some pretext
+				e.g. getting embedded video to play
+		best delivered in PowerPoint Presentation file (.ppsx or .pps)
+		host malicious dropper on external WebDav server (see BlackHills and WebDav)
+
+	Remote template injection 
+		.docx containing template document (not malicious code)
+		.docx typically not blocked as attachments (like .doc or .docm)
+
+		Create malicious macro
+		Create Word doc template (.dotm)
+			Developer ribbon -> VBasic editor
+			Paste macro into document
+		Embed template in benign docx file
+			Rename .docx to .zip and unzip file
+			Edit word_rels/settings, change template to remote template
+			Re-zip file and rename with .docx
+		Host template remotely
+		Send benign docx file to victim
+
+	Inline Shapes - see Greg Linares' research
+		charts, comments, textbox, etc
+		can hold malicious code which can be called from a macro
+		
+		Create phishing doc
+		Use InlineShape creation macro
+			create shape (e.g. textbox)
+			set .Visible to false
+		Delete InlineShape creation macro and add execution macro
+		Save document and send it
+
+		Veil - macro creator
+
+		AV obfuscation
+			remove PowerShell call from textbox
+			place PowerShell call in CallByName function and modify parameters accordingly
+
+		can be combined with remote template injection 
+			send docx instead of docm
+			can abort by removing hosted payload
+

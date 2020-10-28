@@ -1,0 +1,129 @@
+ii. Enumeration
+
+http_version
+	msf scan of websites in scope
+
+Windows OS version from IIS version
+	Invoke-WebRequest -uri <site_URI>
+	see: https://en.wikipedia.org/wiki/Internet_Information_Services
+
+
+netdiscover
+	ARP-based scan of hosts on current network
+	netdiscover -r 192.168.2.0/24 
+
+
+nmap 
+	Noisy 
+		General
+			Ping sweep to find hosts
+			nmap -sn <target CIDR>
+
+		Services on a host (all TCP)
+			nmap -sV -sC -p- <target IP>
+
+		Check if port open without knocking on IDS
+			nmap -p <target port> <target IP> -sT
+
+	Quiet
+		-g
+			for Internal scans - source port 88 to blend in with Kerberos traffic
+			for External scans - source port 53 to blend in with DNS traffic
+		-Pn 
+			no ping to reduce chance of disruptions
+		-sV
+			banner grab for versioning information
+		-n 
+			no DNS resolution to reduce 
+		-p 
+			scan one port at a time to reduce chances of detection
+			don't use -p-    it will include 0 which is almost never used and may cause a scan alert
+		--open
+			limits output to open ports only
+
+		-oA 
+			all output types
+
+	Scripts
+		find / -name *.nse 
+		nmap -p <port #s> --script=<script name> <target IP>
+
+
+enum4linux
+	enum4linux -a <target IP>
+
+ftp
+	ftp <target IP>
+	username: anonymous
+	password: anything
+
+
+
+
+Simple ping sweep
+	#!/bin/bash
+
+	### takes user input - first 3 octets of IP for range to sweep
+
+	if  [ "$1" == "" ]
+	  then
+	    echo "Missing IP paramter"
+	    echo "Syntax:  ./ipsweep.sh 192.168.1"
+	  else
+	    for ip in `seq 1 254`; do
+	      ping -c 1 $1.$ip | grep "64 bytes" | cut -d " " -f 4 | tr -d ":" &
+	    done
+	fi
+
+
+Simple port scanner
+	#!/bin/python3
+
+	import sys  #allows enter command line arg and more
+	import socket
+	from datetime import datetime
+
+	# define the target
+	# check to see if there are 2 arguments (including script name)
+	if len(sys.argv) == 2:
+	    # set target to arguement 1
+	    # also translates target to IPv3 is hostname provided instead of IP
+	    target = socket.gethostbyname(sys.argv[1])
+	else:
+	    print("Invalid number of arguments.")
+	    print("Syntax: python3 scanner.py <ip>")
+	    sys.exit()
+
+	# add a banner
+	print("-" * 50)
+	print("Scanning target "+target)
+	print("Time started: "+str(datetime.now()))
+	print("-" * 50)
+
+	try:
+	    for port in range(50,85):
+	        # short form the socket connection to variable s
+	        # AF_INET is IPv4 address, SOCK_STREAM is port
+	        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	        # if socket not detected as open after 1 sec, move on
+	        socket.setdefaulttimeout(1) # is a float
+	        # returns error indicator if no connection
+	        result = s.connect_ex((target, port))
+	        print("Checking port {}".format(port))
+	        # if no error connecting
+	        if result == 0:
+	            print("Port {} is open".format(port))
+	        s.close()
+
+	except KeyboardInterrupt:
+	    print("\nExiting program.")
+	    sys.exit()
+
+	except socket.gaierror:
+	    print("Hostname could not be resolved.")
+	    sys.exit()
+
+	except socket.error:
+	    print("Could not connect to server.")
+	    sys.exit()
+
