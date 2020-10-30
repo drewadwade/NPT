@@ -1,3 +1,5 @@
+
+
 Linux
 	/etc/issue 
 	/etc/motd 
@@ -52,6 +54,9 @@ Linux
 		/proc/self/environ
 
 Windows
+
+gci c:\ -Include *pass*.txt,*pass*.xml,*pass*.ini,*pass*.xlsx,*cred*,*vnc*,*.config*,*accounts* -File -Recurse -EA SilentlyContinue
+
 	C:/$recycle.bin/s-1-5-18/desktop.ini
 	C:/apache2/log/access.log
 	C:/apache2/log/access_log
