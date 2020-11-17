@@ -162,6 +162,8 @@ Bind Shells
 Upgrading to TTY Shell
 
 	python -c 'import pty; pty.spawn("/bin/bash")'
+
+	python3 -c 'import pty; pty.spawn("/bin/bash")'
 	
 		stty raw -echo
 

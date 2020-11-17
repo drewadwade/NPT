@@ -1,0 +1,8 @@
+SQL
+
+Oracle
+	odat
+	oscanner
+
+	sqlplus
+		sqlplus username/password@//dbhost:1521/SID
