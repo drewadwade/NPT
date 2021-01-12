@@ -1,7 +1,11 @@
 ii. Enumeration
 
+autorecon
+
+
 http_version
 	msf scan of websites in scope
+
 
 Windows OS version from IIS version
 	Invoke-WebRequest -uri <site_URI>
