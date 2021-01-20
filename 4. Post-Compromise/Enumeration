@@ -43,6 +43,38 @@ Windows
 	ipconfig /displaydns
 
 
+
+
+	
+
+
+
+PowerShell
+	Host discovery using mass DNS reverse lookup
+		$net = "10.10.1."
+		0..255 | foreach {$r=(Resolve-DNSname -ErrorAction SilentlyContinue $net$_ | ft NameHost -HideTableHeaders | Out-String).trim().replace("\s+","").replace("`r","").replace("`n"," "); Write-Output "$net$_ $r"} | tee ip_hostname.txt
+
+	Port scan a host for interesting ports
+		$ports = "21 22 23 25 53 80 88 111 139 389 443 445 873 1099 1433 1521 1723 2049 2100 2121 3299 3306 3389 3632 4369 5038 5060 5432 5555 5900 5985 6000 6379 6667 8000 8080 8443 9200 27017"
+		$ip = "10.10.15.232"
+		$ports.split(" ") | % {echo ((new-object Net.Sockets.TcpClient).Connect($ip,$_)) "Port $_ is open on $ip"} 2>$null 
+
+	Port scan a network for a single port (port-sweep)
+		$port = 22
+		$net = "10.10.0."
+		0..255 | foreach { echo ((new-object Net.Sockets.TcpClient).Connect($net+$_,$port)) "Port $port is open on $net$_"} 2>$null
+
+	Get SID of the current user
+	([System.Security.Principal.WindowsIdentity]::GetCurrent()).User.Value
+
+	Check if we are running with elevated (admin) privileges
+	If (([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) { echo "yes"; } else { echo "no"; }
+
+	List installed antivirus (AV) products
+	Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct
+
+
+
 SMB Session Enumeration against DC
 	who else has sessions with SMB share and their IP
 
@@ -56,6 +88,7 @@ Show wifi password in plaintext
 		req's admin rights
 
 	Win+R—> ncpa.cpl —> DoubleClick_Wifi Name —> Under General —> Wireless Properties —>Security —>Show Characters
+
 
 Logs
 	Linux
@@ -140,6 +173,8 @@ BloodHound
 	Click hamburger menu to view results
 	Select Queries for prebuilt queries or build own
 
+BloodHound.py
+	github.com/fox-it/bloodhound.py
 
 
 

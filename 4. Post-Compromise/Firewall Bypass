@@ -3,3 +3,24 @@ Disable Windows Firewall on newer versions
 
 Disable Windows Firewall on older windows:
 	netsh firewall set opmode disable
+
+
+PowerShell
+	Set MAC address from command-line
+	Set-NetAdapter -Name "Ethernet0" -MacAddress "00-01-18-57-1B-0D"
+
+	Whitelist an IP address in Windows firewall
+	New-NetFirewallRule -Action Allow -DisplayName "pentest" -RemoteAddress 10.10.15.123
+
+		remove the rule afterwards:
+			Remove-NetFirewallRule -DisplayName "pentest"
+
+	Allow Remote Desktop connections
+		Allow RDP connections
+		(Get-WmiObject -Class "Win32_TerminalServiceSetting" -Namespace root\cimv2\terminalservices).SetAllowTsConnections(1)
+
+		Disable NLA
+		(Get-WmiObject -class "Win32_TSGeneralSetting" -Namespace root\cimv2\terminalservices -Filter "TerminalName='RDP-tcp'").SetUserAuthenticationRequired(0)
+
+		Allow RDP on the firewall
+		Get-NetFirewallRule -DisplayGroup "Remote Desktop" | Set-NetFirewallRule -Enabled True

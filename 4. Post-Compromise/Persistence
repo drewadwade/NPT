@@ -2,6 +2,13 @@ metsvc
 	Metasploit meterpreter
 		run metsvc -A
 
+Hiding presence
+	Disable PowerShell command logging
+	Set-PSReadlineOption –HistorySaveStyle SaveNothing
+		or
+	Remove-Module PSReadline
+
+
 Persistence Scripts
 	Metasploit meterpreter
 		run persistence -h
@@ -12,6 +19,7 @@ Persistence Scripts
 		exploit/windows/local/persistence
 
 		exploit/windows/local/registry_persistence
+
 
 Scheduled Tasks
 	Metasploit meterpreter

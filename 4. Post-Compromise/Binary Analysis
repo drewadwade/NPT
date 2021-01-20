@@ -1,0 +1,11 @@
+Binary Analysis
+
+strings
+	strings <filename>
+
+ltrace 
+	debugging utility that traces the parameters that an application uses as it makes calls to shared libraries
+
+	ltrace <file_path>
+	Enter
+
