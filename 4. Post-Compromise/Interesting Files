@@ -55,6 +55,10 @@ Linux
 
 Windows
 
+use logs to get system information, since windows 7 and more in 8, debug logs give so much information and avoid to use wmi requests easily detected by EDR. 
+	%WINDIR%\inf\setupapi.setup.log
+
+
 gci c:\ -Include *pass*.txt,*pass*.xml,*pass*.ini,*pass*.xlsx,*cred*,*vnc*,*.config*,*accounts* -File -Recurse -EA SilentlyContinue
 
 	C:/$recycle.bin/s-1-5-18/desktop.ini
